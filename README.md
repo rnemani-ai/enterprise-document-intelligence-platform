@@ -14,24 +14,24 @@ The solution was inspired by a real-world enterprise document-processing initiat
 
 Large enterprises often process thousands of documents such as:
 
-- Claims
-- Invoices
-- Trade Agreements
-- Contracts
-- Promotional Documents
-- Settlement Forms
+* Claims
+* Invoices
+* Trade Agreements
+* Contracts
+* Promotional Documents
+* Settlement Forms
 
 These documents frequently require manual review before business decisions can be made.
 
 Typical challenges include:
 
-- Different layouts across business partners
-- Poor-quality scans
-- Handwritten content
-- Multi-page tables
-- Missing headers
-- Semantic variability
-- Multiple contracts within a single document
+* Different layouts across business partners
+* Poor-quality scans
+* Handwritten content
+* Multi-page tables
+* Missing headers
+* Semantic variability
+* Multiple contracts within a single document
 
 Manual review workflows can be slow, inconsistent, and difficult to scale.
 
@@ -41,20 +41,50 @@ The objective was to reduce manual effort, improve validation quality, and reduc
 
 ---
 
-# Solution Overview
+# Solution Architecture
 
 The platform uses a metadata-driven architecture that separates document-specific behavior from application code.
 
 Rather than hardcoding extraction logic for every document variation, the system dynamically retrieves extraction rules, prompts, and validation requirements from a centralized metadata repository.
 
+![Technical Architecture](diagrams/technical_architecture.png)
+
 Key capabilities include:
 
-- OCR-based text extraction
-- Context-aware field extraction using LLMs
-- Dynamic prompt selection
-- Validation and business rule enforcement
-- Confidence-based human review
-- Enterprise-scale traceability and monitoring
+* OCR-based text extraction
+* Context-aware field extraction using LLMs
+* Dynamic prompt selection
+* Validation and business rule enforcement
+* Confidence-based human review
+* Enterprise-scale traceability and monitoring
+
+Detailed architecture documentation is available in:
+
+```text
+docs/04_architecture.md
+```
+
+---
+
+# Metadata-Driven Onboarding
+
+A key differentiator of the platform is metadata-driven onboarding.
+
+New document types are onboarded through configuration rather than code changes, allowing the platform to scale across retailers, document categories, and document types.
+
+![Metadata Driven Onboarding](diagrams/metadata_driven_onboarding.png)
+
+Metadata stored in Snowflake includes:
+
+* Retailer
+* Document Type
+* Document Category
+* Prompt Templates
+* Fields To Extract
+* Validation Rules
+* Processing Configuration
+
+This enables new document types to be added without modifying application code.
 
 ---
 
@@ -64,14 +94,14 @@ Key capabilities include:
 
 The platform was designed to handle:
 
-- Scanned PDFs
-- Blurry documents
-- Rotated documents
-- Handwritten annotations
-- Multi-page tables
-- Tables without repeated headers
-- Multiple contracts in a single PDF
-- Multiple tables within a document
+* Scanned PDFs
+* Blurry documents
+* Rotated documents
+* Handwritten annotations
+* Multi-page tables
+* Tables without repeated headers
+* Multiple contracts in a single PDF
+* Multiple tables within a document
 
 ---
 
@@ -90,6 +120,8 @@ Purchase Order Number
 
 Traditional rule-based extraction approaches often struggle with these variations.
 
+The use of LLMs enables contextual understanding rather than relying solely on fixed field names or coordinates.
+
 ---
 
 ## Large Document Processing
@@ -98,66 +130,20 @@ Many documents exceeded LLM context limits.
 
 The platform implemented:
 
-- Token-aware chunking
-- Overlap optimization
-- Response consolidation
-- Context-window safety buffers
+* Token-aware chunking
+* Overlap optimization
+* Response consolidation
+* 90% context-window safety buffers
 
 to maintain extraction quality across large documents.
 
 ---
 
-# Technical Architecture
-
-```text
-Business User
-        ↓
-Gradio UI (Optional)
-        ↓
-Document Reader Platform
-        ↓
-OCR Layer
-(Azure DI / Tesseract / PDFPlumber)
-        ↓
-Metadata Retrieval
-(Snowflake)
-        ↓
-Chunking Layer
-(TikToken)
-        ↓
-Azure OpenAI GPT-3.5
-        ↓
-Validation Layer
-        ↓
-Confidence Assessment
-        ↓
-Human Review (If Needed)
-        ↓
-Snowflake Storage
-```
-
-Detailed architecture documentation is available in:
-
-```text
-docs/04_architecture.md
-```
-
----
-
 # Key Engineering Decisions
 
-## Metadata-Driven Onboarding
+## Metadata-Driven Design
 
-New document types can be onboarded through configuration rather than code changes.
-
-Metadata stored in Snowflake includes:
-
-- Document Type
-- Retailer
-- Document Category
-- Prompt Templates
-- Validation Rules
-- Fields To Extract
+Document-specific logic was externalized into Snowflake metadata rather than embedded within application code.
 
 ---
 
@@ -167,18 +153,18 @@ Not every document requires an LLM.
 
 The platform uses:
 
-- OCR
-- Traditional parsing techniques
-- Open-source document libraries
-- LLM-based extraction
+* OCR
+* Traditional parsing techniques
+* Open-source document libraries
+* LLM-based extraction
 
 depending on document complexity.
 
 This improves:
 
-- Cost efficiency
-- Processing speed
-- Scalability
+* Cost efficiency
+* Processing speed
+* Scalability
 
 ---
 
@@ -188,9 +174,9 @@ OCR outputs are stored separately from extraction outputs.
 
 This enables:
 
-- Root-cause analysis
-- Error attribution
-- Continuous improvement
+* Root-cause analysis
+* Error attribution
+* Continuous improvement
 
 ---
 
@@ -200,11 +186,29 @@ The platform prioritizes reliability over raw automation.
 
 Controls include:
 
-- Structured outputs
-- Validation layers
-- Pydantic checks
-- Human review workflows
-- Confidence assessment
+* Structured outputs
+* Validation layers
+* Pydantic checks
+* Human review workflows
+* Confidence assessment
+
+---
+
+# Reliability Framework
+
+The platform emphasizes reliability through validation, confidence scoring, traceability, hallucination mitigation, and human review workflows.
+
+![Reliability Framework](diagrams/reliability_framework.png)
+
+Reliability controls include:
+
+* Schema Validation
+* Pydantic Validation
+* Business Rule Validation
+* Confidence Assessment
+* Human Review
+* Traceability
+* Evidence-Based Extraction
 
 ---
 
@@ -212,16 +216,28 @@ Controls include:
 
 The solution was evaluated across multiple dimensions:
 
-- OCR Evaluation
-- Extraction Evaluation
-- Consistency Evaluation
-- Reliability Evaluation
-- Hallucination Evaluation
-- Robustness Testing
-- Failure Mode Analysis
-- Business Impact Assessment
+* OCR Evaluation
+* Extraction Evaluation
+* Consistency Evaluation
+* Reliability Evaluation
+* Hallucination Evaluation
+* Robustness Testing
+* Failure Mode Analysis
+* Business Impact Assessment
 
 The objective was understanding not only when the system succeeds, but also when and why it fails.
+
+![Enterprise GenAI Evaluation Framework](diagrams/genai_evaluation_framework.png)
+
+The evaluation framework emphasizes:
+
+* Reliability
+* Robustness
+* Trustworthiness
+* Responsible AI
+* Operational Readiness
+
+rather than focusing solely on model accuracy.
 
 ---
 
@@ -231,12 +247,14 @@ Hallucination risk was treated as a system-level problem rather than a prompt-en
 
 Mitigation strategies included:
 
-- Temperature = 0
-- Structured outputs
-- Explicit NULL handling
-- Validation layers
-- Human review workflows
-- OCR evidence verification
+* Temperature = 0
+* Structured outputs
+* Explicit NULL handling
+* Validation layers
+* Human review workflows
+* OCR evidence verification
+
+The objective was ensuring extracted values were supported by document evidence before downstream consumption.
 
 ---
 
@@ -276,10 +294,10 @@ through improved efficiency and reduced manual effort.
 
 The solution evolved into a reusable enterprise capability supporting:
 
-- Faster onboarding
-- Reduced maintenance effort
-- Improved scalability
-- Lower operational costs
+* Faster onboarding
+* Reduced maintenance effort
+* Improved scalability
+* Lower operational costs
 
 ---
 
@@ -307,6 +325,10 @@ enterprise-document-intelligence-platform/
 │   └── 14_failure_modes_and_risk_analysis.md
 
 ├── diagrams/
+│   ├── technical_architecture.png
+│   ├── metadata_driven_onboarding.png
+│   ├── reliability_framework.png
+│   └── genai_evaluation_framework.png
 
 └── presentation/
 ```
@@ -315,42 +337,44 @@ enterprise-document-intelligence-platform/
 
 # Skills Demonstrated
 
-This case study demonstrates experience across:
-
 ### AI & Machine Learning
 
-- Generative AI
-- Prompt Engineering
-- LLM Evaluation
-- Responsible AI
+* Generative AI
+* Prompt Engineering
+* LLM Evaluation
+* Responsible AI
 
 ### Document Intelligence
 
-- OCR
-- Azure Document Intelligence
-- Tesseract
-- PDFPlumber
+* Azure Document Intelligence
+* OCR Evaluation
+* Tesseract OCR
+* PDFPlumber
+* Information Extraction
 
 ### Data Engineering
 
-- Snowflake
-- Metadata Management
-- Data Validation
+* Snowflake
+* Metadata Management
+* Data Validation
+* Data Traceability
 
 ### Software Engineering
 
-- Python
-- CI/CD
-- Automated Testing
-- Logging
-- Error Handling
+* Python
+* CI/CD
+* Automated Testing
+* Logging
+* Error Handling
+* Production Readiness
 
 ### Enterprise Architecture
 
-- Scalable Design
-- Human-in-the-Loop Systems
-- Observability
-- Reliability Engineering
+* Metadata-Driven Design
+* Human-in-the-Loop Systems
+* Reliability Engineering
+* Observability
+* Scalable Platform Design
 
 ---
 
@@ -358,12 +382,12 @@ This case study demonstrates experience across:
 
 Potential future enhancements include:
 
-- Automated Document Classification
-- Advanced Confidence Scoring
-- Retrieval-Augmented Generation (RAG)
-- Cross-Document Validation
-- Enterprise Search
-- Agentic Document Intelligence
+* Automated Document Classification
+* Advanced Confidence Scoring
+* Retrieval-Augmented Generation (RAG)
+* Cross-Document Validation
+* Enterprise Search
+* Agentic Document Intelligence
 
 Additional details are available in:
 
@@ -379,4 +403,4 @@ This repository is intended for educational and portfolio purposes.
 
 All company-specific references, proprietary implementations, confidential business logic, sensitive data, and internal documentation have been removed or generalized.
 
-The focus of this repository is demonstrating architecture, engineering decisions, evaluation methodologies, scalability patterns, and lessons learned from building an enterprise document intelligence platform.
+The focus of this repository is demonstrating architecture, engineering decisions, evaluation methodologies, scalability patterns, reliability frameworks, and lessons learned from building an enterprise document intelligence platform.
