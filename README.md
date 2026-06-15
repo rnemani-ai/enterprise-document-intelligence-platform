@@ -1,167 +1,382 @@
 # Enterprise Document Intelligence Platform
 
-Metadata-Driven AI Platform for Automated Document Extraction, Validation, and Enterprise Workflow Acceleration
+## Overview
+
+This repository presents a case study of an enterprise-scale Document Intelligence Platform designed to automate extraction, validation, and review workflows for highly variable business documents.
+
+The platform combines OCR technologies, Large Language Models (LLMs), metadata-driven configuration, validation frameworks, and human-in-the-loop review processes to reduce manual effort while improving reliability, scalability, and business outcomes.
+
+The solution was inspired by a real-world enterprise document-processing initiative and has been generalized to remove all proprietary information, confidential business logic, and company-specific details.
 
 ---
 
-## Executive Summary
+# Business Problem
 
-This repository presents a case study of a production-oriented Document Intelligence Platform designed to automate extraction and validation of information from highly variable business documents including:
+Large enterprises often process thousands of documents such as:
 
 - Claims
 - Invoices
 - Trade Agreements
 - Contracts
 - Promotional Documents
+- Settlement Forms
 
-The solution combines OCR technologies, Large Language Models, metadata-driven configuration, validation frameworks, and human review workflows to reduce manual effort while improving reliability and scalability.
+These documents frequently require manual review before business decisions can be made.
 
----
+Typical challenges include:
 
-## Business Problem
-
-More than 250 business users were manually reviewing claims and supporting documents before payment decisions could be made.
-
-The process required:
-
-- Document review
-- Data gathering
-- System lookups
-- Validation checks
-
-and took approximately 20 minutes per document.
-
-The objective was reducing validation effort while improving consistency and reducing financial leakage risk.
-
----
-
-## Key Challenges
-
-### Document Variability
-
-- Different retailer layouts
-- Scanned PDFs
-- Blurry documents
-- Rotated pages
+- Different layouts across business partners
+- Poor-quality scans
 - Handwritten content
 - Multi-page tables
 - Missing headers
-- Multiple contracts in one PDF
+- Semantic variability
+- Multiple contracts within a single document
 
-### Semantic Variability
+Manual review workflows can be slow, inconsistent, and difficult to scale.
 
-Examples:
+In this case study, more than 250 business users were involved in reviewing and validating documents, with processing times averaging approximately 20 minutes per document.
 
-PO Number
-
-PO No
-
-PO #
-
-Purchase Order Number
-
-### Large Documents
-
-Documents exceeding LLM context limits required specialized chunking and response consolidation strategies.
+The objective was to reduce manual effort, improve validation quality, and reduce financial leakage risk.
 
 ---
 
-## Solution Overview
+# Solution Overview
 
-The platform uses a metadata-driven architecture where document-processing behavior is controlled through configuration rather than hardcoded logic.
+The platform uses a metadata-driven architecture that separates document-specific behavior from application code.
+
+Rather than hardcoding extraction logic for every document variation, the system dynamically retrieves extraction rules, prompts, and validation requirements from a centralized metadata repository.
 
 Key capabilities include:
 
-- OCR-based extraction
-- Contextual AI extraction
+- OCR-based text extraction
+- Context-aware field extraction using LLMs
 - Dynamic prompt selection
-- Validation workflows
-- Human review workflows
-- Enterprise storage and traceability
+- Validation and business rule enforcement
+- Confidence-based human review
+- Enterprise-scale traceability and monitoring
 
 ---
 
-## Technical Architecture
+# Key Challenges Addressed
 
-(Architecture Diagram Here)
+## Document Variability
+
+The platform was designed to handle:
+
+- Scanned PDFs
+- Blurry documents
+- Rotated documents
+- Handwritten annotations
+- Multi-page tables
+- Tables without repeated headers
+- Multiple contracts in a single PDF
+- Multiple tables within a document
 
 ---
 
-## Key Differentiators
+## Semantic Variability
 
-### Metadata-Driven Onboarding
+The same business field may appear under different labels.
 
-New document types can be onboarded through metadata configuration rather than application changes.
+Examples:
 
-### Hybrid Extraction Strategy
+```text
+PO Number
+PO No
+PO #
+Purchase Order Number
+```
 
-The platform uses traditional extraction techniques whenever possible and reserves LLMs for contextual understanding scenarios.
+Traditional rule-based extraction approaches often struggle with these variations.
 
-### OCR Traceability
+---
 
-OCR outputs are stored separately from extraction outputs to enable root-cause analysis.
+## Large Document Processing
 
-### Hallucination Mitigation
+Many documents exceeded LLM context limits.
 
-Implemented through:
+The platform implemented:
 
-- Grounding
-- Validation
+- Token-aware chunking
+- Overlap optimization
+- Response consolidation
+- Context-window safety buffers
+
+to maintain extraction quality across large documents.
+
+---
+
+# Technical Architecture
+
+```text
+Business User
+        ↓
+Gradio UI (Optional)
+        ↓
+Document Reader Platform
+        ↓
+OCR Layer
+(Azure DI / Tesseract / PDFPlumber)
+        ↓
+Metadata Retrieval
+(Snowflake)
+        ↓
+Chunking Layer
+(TikToken)
+        ↓
+Azure OpenAI GPT-3.5
+        ↓
+Validation Layer
+        ↓
+Confidence Assessment
+        ↓
+Human Review (If Needed)
+        ↓
+Snowflake Storage
+```
+
+Detailed architecture documentation is available in:
+
+```text
+docs/04_architecture.md
+```
+
+---
+
+# Key Engineering Decisions
+
+## Metadata-Driven Onboarding
+
+New document types can be onboarded through configuration rather than code changes.
+
+Metadata stored in Snowflake includes:
+
+- Document Type
+- Retailer
+- Document Category
+- Prompt Templates
+- Validation Rules
+- Fields To Extract
+
+---
+
+## Hybrid Extraction Strategy
+
+Not every document requires an LLM.
+
+The platform uses:
+
+- OCR
+- Traditional parsing techniques
+- Open-source document libraries
+- LLM-based extraction
+
+depending on document complexity.
+
+This improves:
+
+- Cost efficiency
+- Processing speed
+- Scalability
+
+---
+
+## OCR Traceability
+
+OCR outputs are stored separately from extraction outputs.
+
+This enables:
+
+- Root-cause analysis
+- Error attribution
+- Continuous improvement
+
+---
+
+## Reliability-First Design
+
+The platform prioritizes reliability over raw automation.
+
+Controls include:
+
 - Structured outputs
-- Human review
-
-### Reliability-First Design
-
-Extraction results pass through validation and confidence assessment before downstream consumption.
+- Validation layers
+- Pydantic checks
+- Human review workflows
+- Confidence assessment
 
 ---
 
-## Business Impact
+# Evaluation Framework
 
-### Operational Impact
+The solution was evaluated across multiple dimensions:
 
-- Reduced validation effort from ~20 minutes to <2 minutes
+- OCR Evaluation
+- Extraction Evaluation
+- Consistency Evaluation
+- Reliability Evaluation
+- Hallucination Evaluation
+- Robustness Testing
+- Failure Mode Analysis
+- Business Impact Assessment
 
-### Financial Impact
+The objective was understanding not only when the system succeeds, but also when and why it fails.
 
-- Projected annual savings exceeding $19M
+---
 
-### Platform Impact
+# Hallucination Mitigation
 
-- Reusable enterprise capability
+Hallucination risk was treated as a system-level problem rather than a prompt-engineering problem.
+
+Mitigation strategies included:
+
+- Temperature = 0
+- Structured outputs
+- Explicit NULL handling
+- Validation layers
+- Human review workflows
+- OCR evidence verification
+
+---
+
+# Business Impact
+
+## Operational Impact
+
+Reduced document validation effort from approximately:
+
+```text
+~20 Minutes
+```
+
+to:
+
+```text
+< 2 Minutes
+```
+
+per document.
+
+---
+
+## Financial Impact
+
+Projected annual savings exceeding:
+
+```text
+$19 Million
+```
+
+through improved efficiency and reduced manual effort.
+
+---
+
+## Platform Impact
+
+The solution evolved into a reusable enterprise capability supporting:
+
 - Faster onboarding
+- Reduced maintenance effort
 - Improved scalability
+- Lower operational costs
 
 ---
 
-## Repository Structure
+# Repository Structure
 
-docs/
-diagrams/
-presentation/
+```text
+enterprise-document-intelligence-platform/
+
+├── README.md
+
+├── docs/
+│   ├── 01_executive_summary.md
+│   ├── 02_business_problem.md
+│   ├── 03_solution_overview.md
+│   ├── 04_architecture.md
+│   ├── 05_key_engineering_decisions.md
+│   ├── 06_scalability.md
+│   ├── 07_evaluation_framework.md
+│   ├── 08_reliability_and_guardrails.md
+│   ├── 09_responsible_ai.md
+│   ├── 10_production_engineering.md
+│   ├── 11_business_impact.md
+│   ├── 12_lessons_learned.md
+│   ├── 13_future_enhancements.md
+│   └── 14_failure_modes_and_risk_analysis.md
+
+├── diagrams/
+
+└── presentation/
+```
 
 ---
 
-## Skills Demonstrated
+# Skills Demonstrated
+
+This case study demonstrates experience across:
+
+### AI & Machine Learning
 
 - Generative AI
 - Prompt Engineering
+- LLM Evaluation
+- Responsible AI
+
+### Document Intelligence
+
 - OCR
 - Azure Document Intelligence
+- Tesseract
+- PDFPlumber
+
+### Data Engineering
+
 - Snowflake
+- Metadata Management
+- Data Validation
+
+### Software Engineering
+
 - Python
-- Validation Frameworks
+- CI/CD
+- Automated Testing
+- Logging
+- Error Handling
+
+### Enterprise Architecture
+
+- Scalable Design
 - Human-in-the-Loop Systems
-- Responsible AI
-- Production Engineering
-- Enterprise Architecture
+- Observability
+- Reliability Engineering
 
 ---
 
-## Disclaimer
+# Future Enhancements
 
-This repository is a portfolio case study based on a real-world enterprise document intelligence project.
+Potential future enhancements include:
 
-All company-specific information, proprietary logic, sensitive data, document samples, and confidential implementation details have been removed or generalized.
+- Automated Document Classification
+- Advanced Confidence Scoring
+- Retrieval-Augmented Generation (RAG)
+- Cross-Document Validation
+- Enterprise Search
+- Agentic Document Intelligence
 
-The focus of this repository is demonstrating architecture, engineering decisions, evaluation methodologies, scalability patterns, and lessons learned.
+Additional details are available in:
+
+```text
+docs/13_future_enhancements.md
+```
+
+---
+
+# Disclaimer
+
+This repository is intended for educational and portfolio purposes.
+
+All company-specific references, proprietary implementations, confidential business logic, sensitive data, and internal documentation have been removed or generalized.
+
+The focus of this repository is demonstrating architecture, engineering decisions, evaluation methodologies, scalability patterns, and lessons learned from building an enterprise document intelligence platform.
